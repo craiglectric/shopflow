@@ -90,31 +90,11 @@ public enum WorkOrderStatusEngine {
         return true
     }
 
-    /// Whether the 8-point assessment checklist is complete for a WO of the
-    /// given device type. Pure port of iOS `WorkOrder.isAssessmentChecklistComplete`:
-    /// every item the device's template expects must be resolved (Pass,
-    /// Fail-with-note, or N/A); for optional sections, a section-level marker row
-    /// (`itemKey == ""`, `result == .notApplicable`) satisfies the whole section.
-    /// An untouched item has no snapshot at all and reads as unresolved.
-    public static func isAssessmentComplete(
-        device: DeviceType?,
-        states: [ChecklistItemSnapshot]
-    ) -> Bool {
-        let template = ChecklistTemplate.forDevice(device)
-        for section in template.sections {
-            if section.isOptional {
-                let marker = states.first { $0.sectionKey == section.key && $0.isSectionMarker }
-                if marker?.result == .notApplicable { continue }
-            }
-            for item in section.items {
-                let state = states.first {
-                    $0.sectionKey == section.key && $0.itemKey == item.key
-                }
-                guard let state, state.isResolved else { return false }
-            }
-        }
-        return true
-    }
+    // Assessment-checklist completeness is no longer computed here. The hardcoded
+    // per-device template (the copyrighted 8-point checklist) was removed; shops
+    // define their own checklist, and completeness is measured against that
+    // server-side (`ChecklistTemplateData.isComplete`) — `shouldAutoAdvanceToReady`
+    // takes the precomputed `assessmentComplete` flag.
 
     /// When a WO is declined, pre-commitment parts (Needed or anywhere in the
     /// approval cycle) are flipped to declined; already-ordered-and-beyond parts
